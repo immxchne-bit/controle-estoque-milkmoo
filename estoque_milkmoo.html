@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Controle de Estoque - MilkMoo</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #fafafa;
+    font-size: 16px;
+  }
+  h1 {
+    color: #4a148c;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h1 img {
+    height: 40px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    display: block;         /* torna a tabela scrollável */
+    overflow-x: auto;       /* ativa barra de rolagem horizontal */
+    white-space: nowrap;    /* evita quebra nas células */
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background: #eee;
+  }
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    max-width: 80px;
+    box-sizing: border-box;
+    padding: 4px;
+    text-align: center;
+  }
+  input[type="text"] {
+    max-width: 200px;
+  }
+  td > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
+  button {
+    padding: 10px 15px;
+    font-size: 16px;
+    margin: 5px 2px;
+    cursor: pointer;
+  }
+
+  /* Media query para telas pequenas */
+  @media (max-width: 600px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead tr {
+      display: none;
+    }
+    tbody tr {
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background: white;
+      border-radius: 6px;
+    }
+    tbody td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+      border: none;
+      border-bottom: 1px solid #eee;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      font-weight: bold;
+      text-align: left;
+      white-space: nowrap;
+    }
+    input[type="number"], input[type="text"] {
+      max-width: 100%;
+      text-align: left;
+    }
+    td > div {
+      justify-content: flex-start;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>
+    📦 Controle de Estoque - MilkMoo
+    <img src="https://www.milkymoo.com.br/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flogo-footer.bb3c04f0.png&w=128&q=75" alt="Logo MilkMoo" />
+  </h1>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Quantidade</th>
+        <th>Observações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="salvar()">💾 Salvar Estoque</button>
+  <button onclick="exportar()">📤 Exportar CSV</button>
+
+<script>
+let produtos = [
+  { nome: "Pacotes Ovomaltine", qtd: 0, obs: "" },
+  { nome: "Pacotes Chocoball", qtd: 0, obs: "" },
+  { nome: "Pacotes Granulado", qtd: 0, obs: "" },
+  { nome: "Caixas Granulado fechada", qtd: 0, obs: "" },
+  { nome: "Pacotes Coco ralado", qtd: 0, obs: "" },
+  { nome: "Latas Leite Ninho", qtd: 0, obs: "" },
+  { nome: "Caixas Ferrero Rocher", qtd: 0, obs: "" },
+  { nome: "Caixas Rafaello", qtd: 0, obs: "" },
+  { nome: "Caramelo Salgado", qtd: 0, obs: "" },
+  { nome: "Groselha", qtd: 0, obs: "" },
+  { nome: "Cookies Crocante", qtd: 0, obs: "" },
+  { nome: "Pacote Amendoim Crocante", qtd: 0, obs: "" },
+  { nome: "Snow Flakes", qtd: 0, obs: "" },
+  { nome: "Potes Doce de leite", qtd: 0, obs: "" },
+  { nome: "Pacotes Bolacha Maria", qtd: 0, obs: "" },
+  { nome: "Caixas Crocante", qtd: 0, obs: "" },
+  { nome: "Caixas Leite Integral", qtd: 0, obs: "" },
+  { nome: "KG Brownie", qtd: 0, obs: "" },
+  { nome: "Caixas Daus", qtd: 0, obs: "" },
+  { nome: "Fardos Nutella", qtd: 0, obs: "" },
+  { nome: "Fardos Água sem gás", qtd: 0, obs: "" },
+  { nome: "Fardos Água com gás", qtd: 0, obs: "" },
+
+  // Caldas
+  { nome: "Calda Morango", qtd: 0, obs: "" },
+  { nome: "Calda Maracujá", qtd: 0, obs: "" },
+  { nome: "Calda Framboesa", qtd: 0, obs: "" },
+  { nome: "Calda Banana", qtd: 0, obs: "" },
+  { nome: "Calda Limão", qtd: 0, obs: "" },
+  { nome: "Calda Pistache", qtd: 0, obs: "" },
+
+  // Alcoólicos
+  { nome: "Amarula", qtd: 0, obs: "" },
+  { nome: "Jack", qtd: 0, obs: "" },
+  { nome: "Seleta", qtd: 0, obs: "" },
+
+  // Copos e tampas
+  { nome: "Copos 500 balcão", qtd: 0, obs: "" },
+  { nome: "Copos 300 balcão", qtd: 0, obs: "" },
+  { nome: "Copos 300 iFood", qtd: 0, obs: "" },
+  { nome: "Copos 500 iFood", qtd: 0, obs: "" },
+  { nome: "Copos 500 iFood cx fechada", qtd: 0, obs: "" },
+  { nome: "Copos 700 balcão", qtd: 0, obs: "" },
+  { nome: "Copos 700 iFood", qtd: 0, obs: "" },
+  { nome: "Tampas 500 iFood pacotes", qtd: 0, obs: "" },
+  { nome: "Tampas 300 iFood pacotes", qtd: 0, obs: "" },
+  { nome: "Tampas 500 balcão cx", qtd: 0, obs: "" },
+  { nome: "Tampas 300 balcão cx", qtd: 0, obs: "" },
+
+  // Outros insumos
+  { nome: "Caixa guardanapo", qtd: 0, obs: "" },
+  { nome: "Caixa canudo", qtd: 0, obs: "" },
+  { nome: "Caixa marchimelow", qtd: 0, obs: "" },
+  { nome: "Caixa granulado", qtd: 0, obs: "" },
+  { nome: "Caixa colher", qtd: 0, obs: "" },
+  { nome: "Caixa lacre iFood", qtd: 0, obs: "" },
+  { nome: "Caixa lacre validade", qtd: 0, obs: "" },
+  { nome: "Caixa bobina térmica", qtd: 0, obs: "" },
+  { nome: "Pacotes papel interfolha", qtd: 0, obs: "" },
+  { nome: "Galão álcool 70", qtd: 0, obs: "" },
+  { nome: "Galão álcool gel", qtd: 0, obs: "" },
+  { nome: "Fardo sacola iFood fechado", qtd: 0, obs: "" },
+  { nome: "Unidade de sacola", qtd: 0, obs: "" },
+  { nome: "Unidade suporte iFood", qtd: 0, obs: "" },
+  { nome: "Pacotes papel interfolha", qtd: 0, obs: "" },
+  { nome: "Pacotes papel toalha", qtd: 0, obs: "" },
+
+  // Insumos frente de loja
+  { nome: "Unidades Ferrero", qtd: 0, obs: "" },
+  { nome: "Unidades paçoquita", qtd: 0, obs: "" },
+  { nome: "Unidades raffaello", qtd: 0, obs: "" },
+  { nome: "Fardo colherzinha branca", qtd: 0, obs: "" },
+
+  // Mimos prateleira
+  { nome: "Almofadas", qtd: 0, obs: "" },
+  { nome: "Cadernos", qtd: 0, obs: "" },
+  { nome: "Almofadas de pescoço", qtd: 0, obs: "" },
+  { nome: "Xícaras curva", qtd: 0, obs: "" },
+  { nome: "Canecas", qtd: 0, obs: "" },
+  { nome: "Copo Stanley", qtd: 0, obs: "" },
+  { nome: "Copos acrílico", qtd: 0, obs: "" },
+  { nome: "Copos de café", qtd: 0, obs: "" },
+  { nome: "Pelúcia moo", qtd: 0, obs: "" },
+
+  // Mimos estoque
+  { nome: "Copos de acrílico branco lacrados", qtd: 0, obs: "" },
+  { nome: "Copo de acrílico preto lacrado", qtd: 0, obs: "" },
+  { nome: "Copo de acrílico rosa", qtd: 0, obs: "" },
+  { nome: "Copo de acrílico azul lacrado", qtd: 0, obs: "" },
+  { nome: "Canecas tradicional lacradas", qtd: 0, obs: "" },
+  { nome: "Canecas curva preta lacrada", qtd: 0, obs: "" },
+  { nome: "Canecas curva branca lacrada", qtd: 0, obs: "" },
+  { nome: "Copos de café branco lacrados", qtd: 0, obs: "" },
+  { nome: "Copos de café preto lacrado", qtd: 0, obs: "" },
+
+  // Vitrine
+  { nome: "Caneca vitrine", qtd: 0, obs: "" },
+  { nome: "Copo de café vitrine", qtd: 0, obs: "" },
+  { nome: "Copo de acrílico vitrine", qtd: 0, obs: "" },
+  { nome: "Pelúcia moo vitrine", qtd: 0, obs: "" },
+  { nome: "Cadernos vitrine", qtd: 0, obs: "" }
+];
+
+function render() {
+  const tbody = document.querySelector("#tabela tbody");
+  tbody.innerHTML = "";
+  produtos.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Produto">${p.nome}</td>
+      <td data-label="Quantidade">
+        <input type="number" min="0" value="${p.qtd}" onchange="atualizarQtd(${i}, this.value)" />
+      </td>
+      <td data-label="Observações">
+        <input type="text" placeholder="Observações" value="${p.obs}" onchange="atualizarObs(${i}, this.value)" />
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function atualizarQtd(index, valor) {
+  const num = parseInt(valor);
+  produtos[index].qtd = isNaN(num) || num < 0 ? 0 : num;
+}
+
+function atualizarObs(index, valor) {
+  produtos[index].obs = valor;
+}
+
+function salvar() {
+  localStorage.setItem("estoqueMilkMoo", JSON.stringify(produtos));
+  alert("Estoque salvo no navegador!");
+}
+
+function exportar() {
+  const rows = ["Produto,Quantidade,Observações"];
+  produtos.forEach(p => {
+    const nome = `"${p.nome.replace(/"/g, '""')}"`;
+    const obs = `"${p.obs.replace(/"/g, '""')}"`;
+    rows.push(`${nome},${p.qtd},${obs}`);
+  });
+  const csv = rows.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "estoque_milkmoo.csv";
+  a.click();
+}
+
+window.onload = () => {
+  const salvo = localStorage.getItem("estoqueMilkMoo");
+  if (salvo) {
+    produtos = JSON.parse(salvo);
+  }
+  render();
+};
+</script>
+</body>
+</html>
